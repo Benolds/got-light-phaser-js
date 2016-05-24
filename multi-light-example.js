@@ -91,11 +91,27 @@ GameState.prototype.create = function() {
     var NUMBER_OF_WALLS = 3;
     this.walls = this.game.add.group();
     var i, x, y;
+    this.wallMap = {};
     for(i = 0; i < NUMBER_OF_WALLS; i++) {
         x = i * this.game.width/NUMBER_OF_WALLS + 50;
         y = this.game.rnd.integerInRange(50, this.game.height - 200);
-        this.game.add.image(x, y, 'block', 0, this.walls).scale.setTo(3, 3);
+        var wall = this.game.add.sprite(x, y, 'block', 0, this.walls);
+        wall.scale.setTo(3, 3);
+        wall.wallIndex = i;
+        this.wallMap[i] = wall;
     }
+
+    console.log(this.wallMap);
+
+    // this.walls.children.map(function(wall) {return wall.wallIndex });
+
+    // console.log(this.walls.children.map(function(wall) {return wall.wallIndex}));
+
+    // var wallDict = {};
+    // this.walls.forEach(function(wall, index) {
+    //     wallDict[index] = wall;
+    //     console.log(wallDict);
+    // })
 
     // Simulate a pointer click/tap input at the center of the stage
     // when the example begins running.
@@ -129,9 +145,26 @@ GameState.prototype.update = function() {
         // fill the entire light bitmap with a dark shadow color.
         lightGroup.bitmap.context.fillStyle = 'rgb(0, 0, 0)';
         lightGroup.bitmap.context.fillRect(0, 0, this.game.width, this.game.height);
-        // if (lightGroup.lightColor === 'rgb(0, 0, 255)') {
-        //     return;
+
+        lightGroup.wallsIntersecting = {};
+        this.walls.forEach(function(wall) {
+            lightGroup.wallsIntersecting[wall.wallIndex] = false;
+        });
+
+        var color = 'undef';
+        if (lightGroup.lightColor == 'rgb(0, 0, 255)') {
+            color = 'blue';
+        } else if (lightGroup.lightColor === 'rgb(255, 0, 0)') {
+            color = 'red';
+        }
+        // console.log(color);
+
+        // if (this.rayBitmapImage.visible) {
+        //     if (color === 'red') {
+        //         console.log(color, lightGroup.wallsIntersecting);                
+        //     }
         // }
+
         // Ray casting!
         // Cast rays from each light
         lightGroup.forEach(function(light) {
@@ -143,6 +176,7 @@ GameState.prototype.update = function() {
             // Cast rays through the corners of each wall towards the stage edge.
             // Save all of the intersection points or ray end points if there was no intersection.
             this.walls.forEach(function(wall) {
+
                 // Create a ray from the light through each corner out to the edge of the stage.
                 // This array defines points just inside of each corner to make sure we hit each one.
                 // It also defines points just outside of each corner so we can see to the stage edges.
@@ -232,6 +266,10 @@ GameState.prototype.update = function() {
                     } else {
                         // Nothing blocked the ray
                         points.push(ray.end);
+
+                        if (this.rayBitmapImage.visible) {
+                            lightGroup.wallsIntersecting[wall.wallIndex] = true;
+                        }
                     }
                 }
             }, this);
@@ -288,7 +326,6 @@ GameState.prototype.update = function() {
             // the white color will allow the full color of the background to
             // shine through.
             lightGroup.bitmap.context.beginPath();
-            console.log(lightGroup.lightColor);
             lightGroup.bitmap.context.fillStyle = lightGroup.lightColor;
             lightGroup.bitmap.context.moveTo(points[0].x, points[0].y);
             for(var j = 0; j < points.length; j++) {
@@ -311,6 +348,62 @@ GameState.prototype.update = function() {
         }, this);
         // This just tells the engine it should update the texture cache
         lightGroup.bitmap.dirty = true;
+
+        // var val_maker = function(value) {
+        //     if ()
+        // }
+        // var a_list = lightGroup.wallsIntersecting;
+        // var result = Object.keys(a_list).reduce(function(obj, x) {
+        //     obj[key_maker(a_list[x])] = val_maker(a_list[x]);
+        //     return obj;
+        // }, {});
+
+        // var matches = Object.keys(lightGroup.wallsIntersecting).filter(function(wall) {
+        //     return lightGroup.wallsIntersecting[wall] === true;
+        // }); .map(function(wall) {
+        //     return wall.x;
+        // });
+
+        // var tmp = keys.map(function(key) {return })
+
+        // doctors = doctors.filter(function(doctor) {
+        //     return doctor.begin > 2000; // if truthy then keep item
+        // }).map(function(doctor) {
+        //     return { // return what new object will look like
+        //         doctorNumber: "#" + doctor.number,
+        //         playedBy: doctor.actor,
+        //         yearsPlayed: doctor.end - doctor.begin + 1
+        //     };
+        // });
+
+        // var matches = Object.keys(lightGroup.wallsIntersecting);//.filter(function(wall) {
+        // console.log(lightGroup.wallsIntersecting);
+        //     return lightGroup.wallsIntersecting[wall] === true;
+        // });
+
+        if (this.rayBitmapImage.visible) {
+            if (color === 'red') {
+                console.log(color, lightGroup.wallsIntersecting);   
+                console.log(Object.keys(lightGroup.wallsIntersecting));
+                Object.keys(lightGroup.wallsIntersecting).forEach(function(wallIndex) {
+                    var intersections = [];
+                    if ()
+                    console.log(wallMap(wallIndex));
+                });          
+            }
+        }
+
+
+        // lightGroup.wallsIntersecting.forEach(function(wallIndex) {
+
+        // })
+
+        // // console.log(color, lightGroup.wallsIntersecting.length);
+        // if (once) {
+        //     console.log(color, lightGroup.wallsIntersecting);
+        //     once = false;            
+        // }
+
     }, this);
     this.rayBitmap.dirty = true;
 };
@@ -353,6 +446,10 @@ GameState.prototype.getWallIntersection = function(ray) {
     return closestIntersection;
 };
 
+var aspectRatio = 1024.0/768.0;
+var width = 500;
+var once = true;
+
 // Setup game
-var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game');
+var game = new Phaser.Game(aspectRatio * width, width, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
