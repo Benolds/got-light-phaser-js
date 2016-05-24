@@ -354,5 +354,5 @@ GameState.prototype.getWallIntersection = function(ray) {
 };
 
 // Setup game
-var game = new Phaser.Game(848, 450, Phaser.AUTO, 'game');
+var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
